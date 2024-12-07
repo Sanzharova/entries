@@ -1,6 +1,7 @@
 package com.example.controller;
 
-import com.example.entity.EntryEntity;
+import com.example.dto.EntryRequest;
+import com.example.dto.EntryResponse;
 import com.example.entity.UserEntity;
 import com.example.service.EntryService;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/entries")
@@ -20,23 +22,33 @@ public class EntryController {
         this.entryService = entryService;
     }
 
+
+    @GetMapping
+    public ResponseEntity<List<EntryResponse>> getAllEntries() {
+        List<EntryResponse> entries = entryService.getAll();
+        return ResponseEntity.ok(entries);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<EntryResponse> getEntryById(@PathVariable Long id) {
+        Optional<EntryResponse> entry = entryService.getById(id);
+        return entry.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @PostMapping
-    public ResponseEntity<EntryEntity> createEntry(
-            @RequestParam String title,
-            @RequestParam String content,
-            @RequestParam String summary,
+    public ResponseEntity<Long> createEntry(
+            @RequestBody EntryRequest entryDTO,
             @AuthenticationPrincipal UserEntity user) {
-        EntryEntity entry = entryService.createEntry(title, content, summary, user);
-        return ResponseEntity.ok(entry);
+        Long entryId = entryService.createEntry(entryDTO.getTitle(), entryDTO.getContent(), entryDTO.getSummary(), user);
+        return ResponseEntity.ok(entryId);
     }
 
     @PutMapping("/{entryId}")
-    public ResponseEntity<EntryEntity> editEntry(
+    public ResponseEntity<Long> editEntry(
             @PathVariable Long entryId,
-            @RequestParam String title,
-            @RequestParam String content,
-            @RequestParam String summary) {
-        return entryService.editEntry(entryId, title, content, summary)
+            @RequestBody EntryRequest entryDTO) {
+        return entryService.editEntry(entryId, entryDTO.getTitle(), entryDTO.getContent(), entryDTO.getSummary())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -54,7 +66,7 @@ public class EntryController {
     @PostMapping("/{entryId}/images")
     public ResponseEntity<Void> addImages(
             @PathVariable Long entryId,
-            @RequestParam List<MultipartFile> images,
+            @RequestBody List<MultipartFile> images,
             @AuthenticationPrincipal UserEntity user) {
         if (entryService.addImages(entryId, images, user)) {
             return ResponseEntity.ok().build();

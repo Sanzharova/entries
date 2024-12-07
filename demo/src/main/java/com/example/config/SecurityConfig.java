@@ -16,6 +16,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
+    private static final String[] AUTH_WHITELIST = {
+            "/api/entries"
+    };
 
     public SecurityConfig(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
@@ -24,11 +27,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/auth/**")
+                .authorizeHttpRequests((authorize) ->
+                        authorize
+                                .requestMatchers(AUTH_WHITELIST)
+                                .authenticated()
+                                .anyRequest()
                                 .permitAll()
-                            .anyRequest()
-                                .authenticated())
+                )
                 .httpBasic(Customizer.withDefaults());
 
         return http.build();
