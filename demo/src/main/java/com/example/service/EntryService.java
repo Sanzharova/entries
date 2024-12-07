@@ -1,5 +1,6 @@
 package com.example.service;
 
+import com.example.dto.EntryResponse;
 import com.example.entity.EntryEntity;
 import com.example.entity.ImageEntity;
 import com.example.entity.UserEntity;
@@ -23,7 +24,8 @@ public class EntryService {
         this.imageService = imageService;
     }
 
-    public EntryEntity createEntry(String title,
+    @Transactional
+    public Long createEntry(String title,
                                    String content,
                                    String summary,
                                    UserEntity user) {
@@ -32,10 +34,11 @@ public class EntryService {
         entry.setContent(content);
         entry.setSummary(summary);
         entry.setUser(user);
-        return entryRepository.save(entry);
+        return entryRepository.save(entry).getId();
     }
 
-    public Optional<EntryEntity> editEntry(Long entryId,
+    @Transactional
+    public Optional<Long> editEntry(Long entryId,
                                            String title,
                                            String content,
                                            String summary) {
@@ -45,9 +48,29 @@ public class EntryService {
             entry.setTitle(title);
             entry.setContent(content);
             entry.setSummary(summary);
-            return Optional.of(entryRepository.save(entry));
+            return Optional.of(entryRepository.save(entry).getId());
         }
         return Optional.empty();
+    }
+    
+    public List<EntryResponse> getAll() {
+        return entryRepository.findAll().stream().map(entryEntity -> {
+            EntryResponse entryResponse = new EntryResponse();
+            entryResponse.setTitle(entryEntity.getTitle());
+            entryResponse.setContent(entryEntity.getContent());
+            entryResponse.setSummary(entryEntity.getSummary());
+            return entryResponse;
+        }).toList();
+    }
+
+    public Optional<EntryResponse> getById(Long id) {
+        return entryRepository.findById(id).map(entryEntity -> {
+            EntryResponse entryResponse = new EntryResponse();
+            entryResponse.setTitle(entryEntity.getTitle());
+            entryResponse.setContent(entryEntity.getContent());
+            entryResponse.setSummary(entryEntity.getSummary());
+            return entryResponse;
+        });
     }
 
     public boolean deleteEntry(Long entryId, UserEntity user) {
