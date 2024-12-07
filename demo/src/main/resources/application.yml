@@ -1,0 +1,26 @@
+spring:
+  application:
+    name : demo
+  datasource:
+    url: jdbc:h2:mem:entries
+    driver-class-name: org.h2.Driver
+    username: ${H2_DATASOURCE_USERNAME}
+    password: ${H2_DATASOURCE_PASSWORD}
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+
+
+server:
+  port: 8000
+springdoc:
+  api-docs:
+    path: /api-docs
