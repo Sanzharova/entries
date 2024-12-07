@@ -1,8 +1,10 @@
 package com.example.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
+@Data
 @Table(name = "images")
 public class ImageEntity {
     @Id
